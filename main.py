@@ -108,7 +108,7 @@ parser.add_argument('--epsilon', type=float, default=0.001,
 parser.add_argument('--finetune_iter', default=10, type=int, help='number of iterations for finetuning SimCLR classifier')
 
 ## Logging, saving, and testing options
-parser.add_argument('--data_dir', default='./Data', type=str, help='directory for datasets.')
+parser.add_argument('--data_dir', default='./raw-data/', type=str, help='directory for datasets.')
 parser.add_argument('--log_dir', default='./checkpoints', type=str,
                     help='directory for summaries and checkpoints.')
 parser.add_argument('--results_dir', default='./results', type=str,

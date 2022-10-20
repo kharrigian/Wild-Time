@@ -23,42 +23,54 @@ If you find this repository useful in your research, please cite the following p
 We will release the arXiv version of our paper, along with the final code repository, in 1-2 months.
 
 ## Installation
-To download the Wild-Time datasets and run baselines, clone this repo to your local machine.
+To download the Wild-Time datasets and run baselines, clone this repo to your local machine. Note that you should be using Python 3.8 (later versions do not necessarily support the current dependencies). We recommend running everything within a conda environment to easily manage dependencies.
 
 ```
+## Clone and Go To Repository
 git clone git@github.com:huaxiuyao/Wild-Time.git
 cd Wild-Time
+
+## Create and Activate Conda Environment
+conda create -n wild-time python=3.8
+conda activate wild-time
+
+## Install Dependencies
 pip install -r requirements.txt
+
+## Create Dependency Folders
+mkdir ./raw-data/
+mkdir ./checkpoints/
+mkdir ./results/
 ```
-In the directory `Wild-Time`, create the folders `Data`, `checkpoints`, and `results`.
+In the directory `Wild-Time`, create the folders `raw-data`, `checkpoints`, and `results`.
 
 ### Dependencies
 
-- gdown==4.5.1
-- lightly==1.2.27
-- matplotlib==3.5.0
-- numpy==1.19.5
-- omegaconf==2.0.6
-- pandas==1.1.3
-- Pillow==9.2.0
-- pytorch_lightning==1.2.7
-- pytorch_tabular==0.7.0
-- scikit_learn==1.1.2
-- tdc==0.1
-- torch==1.7.0
-- torchcontrib==0.0.2
-- torchvision==0.8.1
-- transformers==4.21.1
-- wilds==2.0.0
+- gdown>=4.5.1
+- lightly>=1.2.27
+- matplotlib>=3.5.0
+- numpy>=1.19.5
+- omegaconf>=2.0.6
+- pandas>=1.1.3
+- Pillow>=9.2.0
+- pytorch_lightning>=1.2.7
+- pytorch_tabular>=0.7.0
+- scikit_learn>=1.1.2
+- PyTDC>=0.1
+- torch>=1.7.0
+- torchcontrib>=0.0.2
+- torchvision>=0.8.1
+- transformers>=4.21.1
+- wilds>=2.0.0
 
 ### Downloading the Wild-Time datasets
 
-Create the folder `Wild-Time/Data`.
+Create the folder `Wild-Time/raw-data/`.
 
-To download the MIMIC-WildT dataset, users must be credentialed on PhysioNet and sign the Data Use Agreement due to data use resstrictions.
+To download the MIMIC-WildT dataset, users must be credentialed on PhysioNet and sign the Data Use Agreement due to data use restrictions.
 Please refer to the next section for instructions.
 
-If you do not need to download the MIMIC-WildT dataset, you can skip the next section and simply run the command `python download_datasets.py --datasets=arxiv, drug, fmow, huffpost, precipitation, yearbook`.
+If you do not need to download the MIMIC-WildT dataset, you can skip the next section and simply run the command `python download_datasets.py --datasets arxiv drug fmow huffpost precipitation yearbook`.
 
 ### Accessing the MIMIC-IV dataset
 
@@ -71,13 +83,13 @@ If you do not need to download the MIMIC-WildT dataset, you can skip the next se
   - Go to the MIMIC-IV dataset [project page](https://physionet.org/content/mimiciv/2.0/).
   - Locate the "Files" section in the project description.
   - Click through, read, and sign the Data Use Agreement (DUA).
-4. Go to https://physionet.org/content/mimiciv/1.0/ and download the following CSV files from the "core" and "hosp" modules to `./Data`:
+4. Go to https://physionet.org/content/mimiciv/1.0/ and download the following CSV files from the "core" and "hosp" modules to `./raw-data/`:
     - patients.csv
     - admissions.csv
     - diagnoses_icd.csv
     - procedures_icd.csv
-   Decompress the files and put them under `./Data`.
-5. Run the command `python download_datasets.py --datasets=arxiv, drug, fmow, huffpost, precipitation, yearbook, mimic`.
+   Decompress the files and put them under `./raw-data/`.
+5. Run the command `python download_datasets.py --datasets arxiv drug fmow huffpost precipitation yearbook mimic`.
 
 
 ## Running baselines
@@ -96,7 +108,7 @@ python main.py --dataset=[DATASET] --method=[BASELINE] --lr=[LEARNING RATE] --tr
 - To run Eval-Stream, add the flag `--eval_next_timesteps`.
 - Set the training batch size with `--mini_batch_size`.
 - Set the number of training iterations with `--train_update_iters`.
-- [Optional] If using a data directory or checkpoint directory other than `./Data` and `./checkpoints`, specify their paths with `--data_dir` and `--log_dir`. 
+- [Optional] If using a data directory or checkpoint directory other than `./raw-data/` and `./checkpoints`, specify their paths with `--data_dir` and `--log_dir`. 
 
 ### CORAL
 - Set the number of groups (e.g., number of time windows) with `--num_groups`.
@@ -116,14 +128,14 @@ python main.py --dataset=arxiv --method=coral --offline --split_time=2016 --cora
 
 Example command:
 ```
-python main.py --dataset=drug --method=groupdro --offline --split_time=2016 --num_groups=3 --group_size=2 --mini_batch_size=256 --train_update_iter=5000 --lr=2e-5 --random_seed=1 --log_dir=./checkpoints --data_dir=./Data/Drug-BA
+python main.py --dataset=drug --method=groupdro --offline --split_time=2016 --num_groups=3 --group_size=2 --mini_batch_size=256 --train_update_iter=5000 --lr=2e-5 --random_seed=1 --log_dir=./checkpoints --data_dir=./raw-data/Drug-BA
 ```
 
 ### IRM
 - Set the number of groups (e.g., number of time windows) with `--num_groups`.
 - Set the group size (e.g., length of each time window) with `--group_size`.
 - Specify the weight of the IRM penalty loss with `--irm_lambda` (default: 1.0)
-- Specify the number of iterations after which to anneal the IRM penalty loss wtih `--irm_penalty_anneal_iters` (default: 0).
+- Specify the number of iterations after which to anneal the IRM penalty loss with `--irm_penalty_anneal_iters` (default: 0).
 
 Example command:
 ```
@@ -142,7 +154,7 @@ python main.py --dataset=huffpost --method=erm --offline --mini_batch_size=32 --
 
 Example command:
 ```
-python main.py --dataset=mimic --method=erm --offline --lisa --mix_alpha=2.0 --prediction_type=mortality --mini_batch_size=128 --train_update_iter=3000 --lr=5e-4 --num_workers=0 --random_seed=1 --split_time=2013 --data_dir=./Data --log_dir=./checkpoints/
+python main.py --dataset=mimic --method=erm --offline --lisa --mix_alpha=2.0 --prediction_type=mortality --mini_batch_size=128 --train_update_iter=3000 --lr=5e-4 --num_workers=0 --random_seed=1 --split_time=2013 --data_dir=./raw-data/ --log_dir=./checkpoints/
 ```
 
 ### Mixup
@@ -150,7 +162,7 @@ python main.py --dataset=mimic --method=erm --offline --lisa --mix_alpha=2.0 --p
 
 Example command:
 ```
-python main.py --dataset=mimic --method=erm --offline --mixup --mix_alpha=2.0 --prediction_type=readmission --mini_batch_size=128 --train_update_iter=3000 --lr=5e-4 --num_workers=0 --random_seed=1 --split_time=2013 --data_dir=./Data --log_dir=./checkpoints/
+python main.py --dataset=mimic --method=erm --offline --mixup --mix_alpha=2.0 --prediction_type=readmission --mini_batch_size=128 --train_update_iter=3000 --lr=5e-4 --num_workers=0 --random_seed=1 --split_time=2013 --data_dir=./raw-data/ --log_dir=./checkpoints/
 ```
 
 ### Averaged Gradient Episodic Memory (A-GEM)
@@ -181,7 +193,7 @@ python main.py --dataset=arxiv --method=ft --mini_batch_size=64 --train_update_i
 
 Example command:
 ```
-python main.py --dataset=drug --method=si --si_c=0.1 --epsilon=0.001 --lr=5e-5 --mini_batch_size=256 --train_update_iter=5000 --split_time=2016 --random_seed=1 --log_dir=./checkpoints --data_dir=./Data/Drug-BA
+python main.py --dataset=drug --method=si --si_c=0.1 --epsilon=0.001 --lr=5e-5 --mini_batch_size=256 --train_update_iter=5000 --split_time=2016 --random_seed=1 --log_dir=./checkpoints --data_dir=./raw-data/Drug-BA
 ```
 
 ### SimCLR
